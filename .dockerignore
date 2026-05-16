@@ -1,0 +1,25 @@
+# --- Heavy Local Package Folders ---
+node_modules/
+
+# --- Local Angular Cache & Build Artifacts ---
+.angular/
+dist/
+.tmp/
+.sass-cache/
+
+# --- Version Control Systems ---
+.git/
+.gitignore
+
+# --- CI/CD & Docker Meta Files ---
+Dockerfile
+.dockerignore
+Jenkinsfile
+k8s/
+
+# --- Local IDEs and OS Metadata ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
