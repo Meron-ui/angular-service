@@ -1,58 +1,57 @@
 pipeline {
     agent any
-    
+
     environment {
-        // 1. Define your Docker Hub registry credentials ID configured in Jenkins
-        DOCKER_REGISTRY_CREDENTIALS_ID = 'dockerhub-credentials' 
-        
-        // 2. Define your Docker Hub username and repository name
-        REGISTRY_USER = 'merontedros' // <-- Replace with your Docker Hub username
+        // Define your Docker Hub registry settings
+        REGISTRY_USER = 'merontedros'
         IMAGE_NAME    = 'angular-service'
-        IMAGE_TAG     = "${BUILD_NUMBER}"      // <-- Uses the unique Jenkins build number (e.g., 1, 2, 3)
+        IMAGE_TAG     = "${BUILD_NUMBER}" // Dynamically increments with each Jenkins build run
+        DOCKER_REGISTRY_CREDENTIALS_ID = 'dockerhub-credentials'
     }
-    
+
     stages {
         stage('Pull Code from GitHub') {
             steps {
-                // This step pulls the specific branch that triggered the build
+                // Pulls the clean checkout branch code directly via SCM
                 checkout scm
             }
         }
-        
+
         stage('Build Docker Image') {
             steps {
                 script {
                     echo "Starting build process for image: ${REGISTRY_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
                     
-                    // Builds the image using the local Dockerfile and tags it uniquely
+                    // Uses the native plugin engine instead of raw shell commands
                     dockerImage = docker.build("${REGISTRY_USER}/${IMAGE_NAME}:${IMAGE_TAG}")
                 }
             }
         }
-        
+
         stage('Push Image to Docker Hub') {
             steps {
                 script {
-                    echo "Logging into Docker Hub and pushing image..."
+                    echo "Authenticating and pushing image to registry..."
                     
-                    // Securely authenticates against DockerHub using credentials stored inside Jenkins
-                    docker.withRegistry('', DOCKER_REGISTRY_CREDENTIALS_ID) {
-                        
-                        // Push the uniquely numbered version (great for Kubernetes rollbacks)
+                    // Securely wraps authentication using your saved credentials ID
+                    docker.withRegistry('https://index.docker.io/v1/', "${DOCKER_REGISTRY_CREDENTIALS_ID}") {
                         dockerImage.push()
-                        
-                        // Also update the 'latest' tag so your cluster can always fetch the newest version
-                        dockerImage.push('latest') 
                     }
                 }
             }
         }
     }
-    
+
     post {
         always {
             echo "Pipeline complete. Cleaning up workspace build artifacts..."
-            cleanWs() // Wipes the temporary build files from the Jenkins agent to save disk space
+            cleanWs()
+        }
+        success {
+            echo "🎉 Successfully built and pushed ${REGISTRY_USER}/${IMAGE_NAME}:${IMAGE_TAG} to Docker Hub!"
+        }
+        failure {
+            echo "❌ Build failed. Check the stage logs above for details."
         }
     }
 }
