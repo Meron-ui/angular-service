@@ -8,10 +8,12 @@ pipeline {
         IMAGE_TAG     = "${BUILD_NUMBER}" // Dynamically increments with each Jenkins build run
         DOCKER_REGISTRY_CREDENTIALS_ID = 'dockerhub-credentials'
 
-        PATH = "${tool 'default'}/bin:${env.PATH}"
     }
 
     stages {
+        tools {
+                dockerTool 'default'
+            }
         stage('Pull Code from GitHub') {
             steps {
                 // Pulls the clean checkout branch code directly via SCM
@@ -20,6 +22,9 @@ pipeline {
         }
 
         stage('Build Docker Image') {
+            tools {
+                dockerTool 'default'
+            }
             steps {
                 script {
                     echo "Starting build process for image: ${REGISTRY_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
@@ -31,6 +36,9 @@ pipeline {
         }
 
         stage('Push Image to Docker Hub') {
+            tools {
+                dockerTool 'default'
+            }
             steps {
                 script {
                     echo "Authenticating and pushing image to registry..."
