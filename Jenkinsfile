@@ -11,9 +11,6 @@ pipeline {
     }
 
     stages {
-        tools {
-                dockerTool 'default'
-            }
         stage('Pull Code from GitHub') {
             steps {
                 // Pulls the clean checkout branch code directly via SCM
