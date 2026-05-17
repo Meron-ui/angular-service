@@ -9,6 +9,10 @@ pipeline {
         DOCKER_REGISTRY_CREDENTIALS_ID = 'dockerhub-credentials'
     }
 
+    tools {
+        docker 'default'
+    }
+
     stages {
         stage('Pull Code from GitHub') {
             steps {
