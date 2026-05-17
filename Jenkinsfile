@@ -2,48 +2,40 @@ pipeline {
     agent any
 
     environment {
-        // Define your Docker Hub registry settings
         REGISTRY_USER = 'merontedros'
         IMAGE_NAME    = 'angular-service'
-        IMAGE_TAG     = "${BUILD_NUMBER}" // Dynamically increments with each Jenkins build run
+        IMAGE_TAG     = "${BUILD_NUMBER}"
         DOCKER_REGISTRY_CREDENTIALS_ID = 'dockerhub-credentials'
+    }
 
+    // Force the tool path globally across all shell stages
+    tools {
+        dockerTool 'default'
     }
 
     stages {
         stage('Pull Code from GitHub') {
             steps {
-                // Pulls the clean checkout branch code directly via SCM
                 checkout scm
             }
         }
 
         stage('Build Docker Image') {
-            tools {
-                dockerTool 'default'
-            }
             steps {
-                script {
-                    echo "Starting build process for image: ${REGISTRY_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
-                    
-                    // Uses the native plugin engine instead of raw shell commands
-                    dockerImage = docker.build("${REGISTRY_USER}/${IMAGE_NAME}:${IMAGE_TAG}")
-                }
+                echo "Starting build process for image: ${REGISTRY_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
+                // Direct shell execution utilizes the tool binary perfectly
+                sh "docker build -t ${REGISTRY_USER}/${IMAGE_NAME}:${IMAGE_TAG} ."
             }
         }
 
         stage('Push Image to Docker Hub') {
-            tools {
-                dockerTool 'default'
-            }
             steps {
-                script {
-                    echo "Authenticating and pushing image to registry..."
-                    
-                    // Securely wraps authentication using your saved credentials ID
-                    docker.withRegistry('https://index.docker.io/v1/', "${DOCKER_REGISTRY_CREDENTIALS_ID}") {
-                        dockerImage.push()
-                    }
+                echo "Authenticating and pushing image to registry..."
+                // Securely grab your username and password from the credentials vault
+                withCredentials([usernamePassword(credentialsId: "${DOCKER_REGISTRY_CREDENTIALS_ID}", passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
+                    // Standard Docker login and push via shell
+                    sh "echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin"
+                    sh "docker push ${REGISTRY_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
                 }
             }
         }
