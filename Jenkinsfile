@@ -34,7 +34,7 @@ pipeline {
                 // Securely grab your username and password from the credentials vault
                 withCredentials([usernamePassword(credentialsId: "${DOCKER_REGISTRY_CREDENTIALS_ID}", passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
                     // Standard Docker login and push via shell
-                    sh "echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin"
+                    sh "docker login -u \$DOCKER_USER -p \$DOCKER_PASS"
                     sh "docker push ${REGISTRY_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
                 }
             }
