@@ -7,10 +7,8 @@ pipeline {
         IMAGE_NAME    = 'angular-service'
         IMAGE_TAG     = "${BUILD_NUMBER}" // Dynamically increments with each Jenkins build run
         DOCKER_REGISTRY_CREDENTIALS_ID = 'dockerhub-credentials'
-    }
 
-    tools {
-        dockerTool 'default'
+        PATH = "${tool 'default'}/bin:${env.PATH}"
     }
 
     stages {
