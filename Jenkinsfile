@@ -8,7 +8,7 @@ pipeline {
         DOCKER_REGISTRY_CREDENTIALS_ID = 'dockerhub-credentials'
     }
 
-    // Force the tool path globally across all shell stages.
+    // Force the tool path globally across all shell stages. This ensures that any 'docker' command invoked in the shell will use the correct binary provided by Jenkins.
     tools {
         dockerTool 'default'
     }
