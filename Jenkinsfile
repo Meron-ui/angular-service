@@ -8,7 +8,7 @@ pipeline {
         DOCKER_REGISTRY_CREDENTIALS_ID = 'dockerhub-credentials'
     }
 
-    // Force the tool path globally across all shell stages. This ensures that the correct Docker binary is used regardless of the agent's default PATH settings.
+    // Force the tool path globally across all shell stages.
     tools {
         dockerTool 'default'
     }
