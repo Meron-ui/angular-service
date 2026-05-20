@@ -28,6 +28,8 @@ pipeline {
             }
         }
 
+        
+
         stage('Push Image to Docker Hub') {
             steps {
                 echo "Authenticating and pushing image to registry..."
